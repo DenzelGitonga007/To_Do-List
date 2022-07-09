@@ -11,17 +11,16 @@ updateTodoButton.style.display = "none"
 
 let Todos = [];
 
-// REST api
-
 const displayAllTodos = () => {
 	todoList.innerHTML = ""
-	axios.get("http://localhost:3000/posts").then(res => {	
-		Todos = [...res.data]
-		if (Todos.length == 0) {
+	axios.get("http://localhost:8000/posts").then(res=>{
+		Todos.push(...res.data)
+		console.log(Todos)
+		if (Todos.length === 0) {
 
 			todoList.innerHTML += `
 			<div class = "empty-todo">
-			<img src="./assets/images/undraw_empty_xct9.png" alt="empty image" style="width: 50%;">
+			<img src="undraw_empty_xct9.png" alt="empty image" style="width: 50%;">
 			<br>
 			<span style="font-family: 'Fira Sans', sans-serif; font-size: 20px; font-weight: bold;">There are no todos yet...</span>
 			<br>
@@ -45,37 +44,22 @@ const displayAllTodos = () => {
 				`;
 			};
 		}
-	}).catch(err => console.log(err));
+	})
 
-	console.log(Todos);
 }
 
 displayAllTodos();
-
-// const addTodo = () => {
-// 	const id = idField.value;
-// 	const timestamp = timeField.value;
-// 	const body = bodyField.value;
-// 	const status = "Not complete";
-// 	Todos.push({id,timestamp, body, status})
-// 	idField.value = "";
-// 	timeField.value = "";
-// 	bodyField.value = "";
-// 	displayAllTodos();
-// }
 
 const addTodo = () => {
 	const id = idField.value;
 	const timestamp = timeField.value;
 	const body = bodyField.value;
 	const status = "Not complete";
-	axios
-    .post('http://localhost:3000/posts', {id,timestamp, body, status})
-    .then(res => console.log(res.data))
-    .catch(err => console.error(err));
-	idField.value = "";
-	timeField.value = "";
-	bodyField.value = "";
+	// Todos.push({id,timestamp, body, status})
+	axios.post("http://localhost:8000/posts", {id:id, timestamp:timestamp, body:body, status:status}).then(res=>{
+		console.log(res)
+	})
+	
 	displayAllTodos();
 }
 
@@ -106,7 +90,10 @@ const addNewTodo = () => {
 }
 
 const deleteTodo = (itemId) => {
-	Todos = Todos.filter(todo => todo.id != itemId);
+	Todos = Todos.filter(todo => todo.id === itemId);
+	console.log(Todos)
+	let deleteItem = Todos[0].id;
+	axios.delete(`http://localhost:8000/posts/${deleteItem}`)
 	displayAllTodos();
 }
 
@@ -116,6 +103,9 @@ const updateTodo = () => {
 			todo.status = "Not complete";
 			todo.body = bodyField.value;
 			todo.timestamp = timeField.value;
+			axios.patch(`http://localhost:8000/posts/${todo.id}`, {id:idField.value, timestamp:getTimeStamp(), body:bodyField.value}).then(res=>{
+				console.log(res)
+			}).catch(err=>console.log(err))
 			return todo;
 		}else{
 			return todo;
@@ -133,7 +123,10 @@ const updateTodo = () => {
 const markTodoAsComplete = (itemId) => {
 	const todos = Todos.map(todo=>{
 		if(todo.id === itemId){
-			todo.status = "Complete";
+			// todo.status = "Complete";
+			axios.patch(`http://localhost:8000/posts/${todo.id}`, {status:"Complete"}).then(res=>{
+				console.log(res)
+			})
 			return todo;
 		}else{
 			return todo;
